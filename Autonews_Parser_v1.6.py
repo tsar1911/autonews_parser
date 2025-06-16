@@ -250,51 +250,51 @@ def parse_avtonovostidnya_article(page, url):
         log(f"❌ Ошибка парсинга статьи avtonovostidnya.ru: {e}")
         return None, None, None
 
-def parse_motor_ru(page):
-    log("🌐 motor.ru/pulse")
-    try:
-        page.goto("https://motor.ru/pulse", timeout=60000, wait_until="domcontentloaded")
-        for _ in range(5):
-            page.mouse.wheel(0, 1500)
-            time.sleep(1.5)
-    except Exception as e:
-        log(f"❌ Ошибка motor.ru: {e}")
-        return []
+# def parse_motor_ru(page):
+#     log("🌐 motor.ru/pulse")
+#     try:
+#         page.goto("https://motor.ru/pulse", timeout=60000, wait_until="domcontentloaded")
+#         for _ in range(5):
+#             page.mouse.wheel(0, 1500)
+#             time.sleep(1.5)
+#     except Exception as e:
+#         log(f"❌ Ошибка motor.ru: {e}")
+#         return []
 
-    soup = BeautifulSoup(page.content(), "html.parser")
-    links = set()
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        if href.startswith("/news") or href.startswith("/pulse"):
-            links.add("https://motor.ru" + href)
-    log(f"✅ motor.ru: {len(links)} ссылок")
-    return list(links)[:5]
+#     soup = BeautifulSoup(page.content(), "html.parser")
+#     links = set()
+#     for a in soup.find_all("a", href=True):
+#         href = a["href"]
+#         if href.startswith("/news") or href.startswith("/pulse"):
+#             links.add("https://motor.ru" + href)
+#     log(f"✅ motor.ru: {len(links)} ссылок")
+#     return list(links)[:5]
 
-def parse_motor_article(page, url):
-    try:
-        page.goto(url, timeout=60000, wait_until="domcontentloaded")
-        page.wait_for_selector("h1", timeout=10000)
-        time.sleep(1)
+# def parse_motor_article(page, url):
+#     try:
+#         page.goto(url, timeout=60000, wait_until="domcontentloaded")
+#         page.wait_for_selector("h1", timeout=10000)
+#         time.sleep(1)
 
-        title = page.query_selector("h1").inner_text()
-        lead = page.query_selector("article p")
-        lead_text = lead.inner_text().strip() if lead else ""
+#         title = page.query_selector("h1").inner_text()
+#         lead = page.query_selector("article p")
+#         lead_text = lead.inner_text().strip() if lead else ""
 
-        image = page.query_selector("article img")
-        image_url = image.get_attribute("src") if image else ""
+#         image = page.query_selector("article img")
+#         image_url = image.get_attribute("src") if image else ""
 
-        if image_url and image_url.startswith("/"):
-            image_url = urljoin(url, image_url)
+#         if image_url and image_url.startswith("/"):
+#             image_url = urljoin(url, image_url)
 
-        if not title or not lead_text:
-            log(f"⚠️ motor.ru: title={bool(title)}, lead={bool(lead_text)}, img={bool(image_url)}")
-            return title.strip(), lead_text, ""  # Даже если нет картинки, возвращаем текст
+#         if not title or not lead_text:
+#             log(f"⚠️ motor.ru: title={bool(title)}, lead={bool(lead_text)}, img={bool(image_url)}")
+#             return title.strip(), lead_text, ""  # Даже если нет картинки, возвращаем текст
 
-        return title.strip(), lead_text, image_url
+#         return title.strip(), lead_text, image_url
 
-    except Exception as e:
-        log(f"❌ motor.ru error: {e}")
-        return None, None, None
+#     except Exception as e:
+#         log(f"❌ motor.ru error: {e}")
+#         return None, None, None
 
 # === ПАРСИНГ auto.ru ===
 def parse_auto_ru(page):
@@ -373,16 +373,16 @@ def main():
             page = context.new_page()
 
             # motor.ru
-            for link in parse_motor_ru(page):
-                if link in published:
-                    log(f"⏭ Уже есть motor.ru: {link}")
-                    continue
-                log(f"🔍 motor.ru: {link}")
-                title, lead, image_url = parse_motor_article(page, link)
-                if title and lead and image_url:
-                    enqueue_post(title, lead, image_url, link, "motor.ru")
-                    published.append(link)
-                    save_published(published)
+            # for link in parse_motor_ru(page):
+            #     if link in published:
+            #         log(f"⏭ Уже есть motor.ru: {link}")
+            #         continue
+            #     log(f"🔍 motor.ru: {link}")
+            #     title, lead, image_url = parse_motor_article(page, link)
+            #     if title and lead and image_url:
+            #         enqueue_post(title, lead, image_url, link, "motor.ru")
+            #         published.append(link)
+            #         save_published(published)
 
             # auto.ru
             for link in parse_auto_ru(page):
