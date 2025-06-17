@@ -1,0 +1,5 @@
+telebot
+playwright
+beautifulsoup4
+sentence-transformers
+torch
