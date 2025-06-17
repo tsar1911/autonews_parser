@@ -7,7 +7,8 @@ import random
 from playwright.sync_api import sync_playwright
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-
+from sentence_transformers import SentenceTransformer, util
+import numpy as np
 import logging
 import sys
 
@@ -24,6 +25,7 @@ logging.basicConfig(
 def log(msg):
     logging.info(msg)
 
+model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 # Настройки
 TELEGRAM_TOKEN = 
@@ -43,7 +45,23 @@ def load_published():
 
 def save_published(data):
     with open(PUBLISHED_FILE, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+import torch
+
+def is_duplicate(title, lead, published_data, threshold=0.82):
+    text = f"{title.strip()} {lead.strip()}"
+    embedding = model.encode(text, convert_to_tensor=True, dtype=torch.float32)
+
+    for item in published_data:
+        if "embedding" not in item:
+            continue
+        stored_embedding = torch.tensor(item["embedding"], dtype=torch.float32)
+        similarity = util.cos_sim(embedding, stored_embedding)[0][0].item()
+        if similarity >= threshold:
+            log(f"⚠️ Похожая статья найдена (порог {threshold:.2f}, совпадение {similarity:.2f}): {item['link']}")
+            return True
+    return False
 
 def enqueue_post(title, lead, image_url, link, source_name):
     if not title or not lead:
@@ -116,7 +134,7 @@ def parse_kolesa_ru(page):
 
 def parse_kolesa_article(page, url):
     try:
-        page.goto(url, timeout=30000)
+        page.goto(url, timeout=30000, wait_until="domcontentloaded")
         time.sleep(3)
 
         title = page.locator("h1").first.inner_text(timeout=5000)
@@ -386,50 +404,76 @@ def main():
 
             # auto.ru
             for link in parse_auto_ru(page):
-                if link in published:
+                if any(isinstance(item, dict) and link == item.get("link") for item in published):
                     log(f"⏭ Уже есть auto.ru: {link}")
                     continue
                 log(f"🔍 auto.ru: {link}")
-                title, lead, image_url = parse_auto_article(page, link)
-                if title and lead and image_url:
-                    enqueue_post(title, lead, image_url, link, "auto.ru")
-                    published.append(link)
-                    save_published(published)
+                result = parse_auto_article(page, link)
+                if result:
+                    title, lead, image_url = result
+                    if title and lead and image_url:
+                        if not is_duplicate(title, lead, published):
+                            embedding = model.encode(f"{title.strip()} {lead.strip()}").tolist()
+                            enqueue_post(title, lead, image_url, link, "auto.ru")
+                            published.append({"link": link, "embedding": embedding})
+                            save_published(published)
+                        else:
+                            log(f"🚫 Пропущена как дубликат: {link}")
 
             # kolesa.ru
             for link in parse_kolesa_ru(page):
-                if link in published:
+                if any(isinstance(item, dict) and link == item.get("link") for item in published):
                     log(f"⏭ Уже есть kolesa.ru: {link}")
                     continue
                 log(f"🔍 kolesa.ru: {link}")
-                title, lead, image_url = parse_kolesa_article(page, link)
-                if title and lead and image_url:
-                    enqueue_post(title, lead, image_url, link, "kolesa.ru")
-                    published.append(link)
-                    save_published(published)
+                result = parse_kolesa_article(page, link)
+                if result:
+                    title, lead, image_url = result
+                    if title and lead and image_url:
+                        if not is_duplicate(title, lead, published):
+                            embedding = model.encode(f"{title.strip()} {lead.strip()}").tolist()
+                            enqueue_post(title, lead, image_url, link, "kolesa.ru")
+                            published.append({"link": link, "embedding": embedding})
+                            save_published(published)
+                        else:
+                            log(f"🚫 Пропущена как дубликат: {link}")   
+
             # autostat.ru
             for link in parse_autostat_ru(page):
-                if link in published:
+                if any(isinstance(item, dict) and link == item.get("link") for item in published):
                     log(f"⏭ Уже есть autostat.ru: {link}")
                     continue
                 log(f"🔍 autostat.ru: {link}")
-                title, lead, image_url = parse_autostat_article(page, link)
-                if title and lead and image_url:
-                    enqueue_post(title, lead, image_url, link, "autostat.ru")
-                    published.append(link)
-                    save_published(published)
+                result = parse_autostat_article(page, link)
+                if result:
+                    title, lead, image_url = result
+                    if title and lead and image_url:
+                        if not is_duplicate(title, lead, published):
+                            embedding = model.encode(f"{title.strip()} {lead.strip()}").tolist()
+                            enqueue_post(title, lead, image_url, link, "autostat.ru")
+                            published.append({"link": link, "embedding": embedding})
+                            save_published(published)
+                        else:
+                            log(f"🚫 Пропущена как дубликат: {link}")
 
             # avtonovostidnya.ru
             for link in parse_avtonovostidnya_ru(page):
-                if link in published:
+                if any(isinstance(item, dict) and link == item.get("link") for item in published):
                     log(f"⏭ Уже есть avtonovostidnya.ru: {link}")
                     continue
                 log(f"🔍 avtonovostidnya.ru: {link}")
-                title, lead, image_url = parse_avtonovostidnya_article(page, link)
-                if title and lead and image_url:
-                    enqueue_post(title, lead, image_url, link, "avtonovostidnya.ru")
-                    published.append(link)
-                    save_published(published)
+                result = parse_avtonovostidnya_article(page, link)
+                if result:
+                    title, lead, image_url = result
+                    if title and lead and image_url:
+                        if not is_duplicate(title, lead, published):
+                            embedding = model.encode(f"{title.strip()} {lead.strip()}").tolist()
+                            enqueue_post(title, lead, image_url, link, "avtonovostidnya.ru")
+                            published.append({"link": link, "embedding": embedding})
+                            save_published(published)
+                        else:
+                            log(f"🚫 Пропущена как дубликат: {link}")
+                            
             browser.close()
             log("✅ Цикл завершён. Жду 30 минут...\n")
 
