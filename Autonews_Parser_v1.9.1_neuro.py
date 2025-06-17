@@ -1,14 +1,12 @@
 import json
 import time
 import threading
-import traceback
 import telebot
 import random
 from playwright.sync_api import sync_playwright
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer, util
-import numpy as np
 import logging
 import sys
 import torch
