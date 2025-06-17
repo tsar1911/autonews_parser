@@ -26,8 +26,8 @@ def log(msg):
 
 
 # Настройки
-TELEGRAM_TOKEN = '7563630474:AAHo-IaZMFLeV3oEYa5NRdBeesE11sgv4uU'
-TELEGRAM_CHAT_ID = '@engine_code_news'
+TELEGRAM_TOKEN = 
+TELEGRAM_CHAT_ID = 
 PUBLISHED_FILE = "published_articles.json"
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
