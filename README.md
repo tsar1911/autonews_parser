@@ -152,6 +152,6 @@ MIT — free to use and modify.
 
 ## 👤 Author
 
-Developed by [your_name]  
-Telegram: [@your_handle]  
-GitHub: [https://github.com/your_username](https://github.com/your_username)
+Developed by tsar19
+Telegram: @tsar19  
+GitHub: [https://github.com/tsar1911](https://github.com/tsar1911)
