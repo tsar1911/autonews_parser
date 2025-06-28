@@ -1,7 +1,9 @@
-beautifulsoup4==4.12.2
-requests==2.31.0
-telebot==0.0.5
-torch==2.1.2
-sentence-transformers==2.5.1
-numpy==1.26.4
-playwright==1.43.0
+torch
+sentence-transformers
+cross-encoder
+faiss-cpu
+numpy
+playwright
+requests
+beautifulsoup4
+tqdm
