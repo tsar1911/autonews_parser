@@ -1,9 +1,7 @@
-torch
-sentence-transformers
-cross-encoder
-faiss-cpu
-numpy
-playwright
-requests
-beautifulsoup4
-tqdm
+aiogram>=3.13.0
+playwright>=1.50.0
+sentence-transformers>=3.0.0
+faiss-cpu>=1.8.0
+numpy>=1.26.0
+python-dotenv>=1.0.1
+requests>=2.32.0
